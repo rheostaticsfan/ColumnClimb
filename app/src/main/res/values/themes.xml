@@ -1,0 +1,3 @@
+<resources>
+    <style name="Theme.CantStop" parent="android:Theme.Material.NoActionBar" />
+</resources>
