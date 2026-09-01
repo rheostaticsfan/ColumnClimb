@@ -1,15 +1,29 @@
+<!--
+  Stop sign. Adaptive-icon foreground: the layer is 108x108, but only a 66dp circle in the
+  middle is guaranteed to survive the launcher's mask, so the octagon's circumradius is 31
+  (62dp across) to sit comfortably inside it.
+
+  Three stacked octagons, all regular with a flat top (vertices every 45 degrees starting at
+  22.5): a white rim at r=31, the red field at r=27.5, and the inset white keyline at r=22
+  that real signs have.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
     <path
-        android:fillColor="#F2C230"
-        android:pathData="M54,24 L84,84 L24,84 Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M82.64,42.14 L65.86,25.36 L42.14,25.36 L25.36,42.14 L25.36,65.86 L42.14,82.64 L65.86,82.64 L82.64,65.86 Z" />
+
     <path
-        android:fillColor="#1B2430"
-        android:pathData="M54,44 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+        android:fillColor="#C62828"
+        android:pathData="M79.41,43.48 L64.52,28.59 L43.48,28.59 L28.59,43.48 L28.59,64.52 L43.48,79.41 L64.52,79.41 L79.41,64.52 Z" />
+
     <path
-        android:fillColor="#1B2430"
-        android:pathData="M54,68 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:pathData="M74.33,45.58 L62.42,33.67 L45.58,33.67 L33.67,45.58 L33.67,62.42 L45.58,74.33 L62.42,74.33 L74.33,62.42 Z" />
 </vector>

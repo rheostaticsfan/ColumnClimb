@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import kotlin.math.abs
 
@@ -14,14 +13,17 @@ const val COLUMNS_TO_WIN = 3
 const val MAX_PLAYERS = 4
 const val UNCLAIMED = -1
 
-val PLAYER_COLORS = listOf(
-    Color(0xFFE53935), // red
-    Color(0xFF2196F3), // blue
-    Color(0xFF4CAF50), // green
-    Color(0xFFFFEB3B), // yellow
-)
+/**
+ * Turn order. Deliberately the same sequence as the score pills in the header and as
+ * QUADRANT_ORDER in Board.kt, which runs clockwise from a cell's top-left corner — so player
+ * order, pill order and marker position are all one thing.
+ *
+ * Marker colours live in BoardPalette (Theme.kt), because they differ per theme.
+ */
+val PLAYER_NAMES = listOf("Red", "Green", "Blue", "Cyan")
 
-val PLAYER_NAMES = listOf("Red", "Blue", "Green", "Yellow")
+/** "Red, Green, Blue, Cyan" — built from the list so it can't drift out of step with it. */
+val TURN_ORDER_TEXT = PLAYER_NAMES.joinToString(", ")
 
 /** Column index 0..10 maps to the dice total 2..12. */
 fun columnNumber(index: Int): Int = index + 2
@@ -59,14 +61,33 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     var runners by mutableStateOf(emptyMap<Int, Int>())
         private set
 
+    /**
+     * Who is playing Red, typed in at the table. Turn order is fixed
+     * (Red, Green, Blue, Cyan), so naming Red is enough to work out everyone else.
+     * Blank means nobody has said.
+     */
+    var firstPlayerName by mutableStateOf("")
+        private set
+
     /** Undo history is in memory only, so it starts empty after the app is killed. */
     private val history = ArrayDeque<GameState>()
 
     /** Mirrors history.size as observable state so the Undo button's enabled state stays honest. */
     private var historyDepth by mutableStateOf(0)
 
+    /** False = light mode, which is the e-ink-friendly one and therefore the default. */
+    var darkMode by mutableStateOf(false)
+        private set
+
     init {
         store.load()?.let(::restore)
+        darkMode = store.loadDarkMode()
+    }
+
+    /** Not called setDarkMode — that name belongs to the property's own generated setter. */
+    fun toggleTheme() {
+        darkMode = !darkMode
+        store.saveDarkMode(darkMode)
     }
 
     val canUndo: Boolean get() = historyDepth > 0
@@ -76,7 +97,8 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     fun claimedCount(player: Int): Int = claimedBy.count { it == player }
 
-    private fun snapshot() = GameState(playerCount, currentPlayer, progress, claimedBy, runners)
+    private fun snapshot() =
+        GameState(playerCount, currentPlayer, progress, claimedBy, runners, firstPlayerName)
 
     private fun restore(s: GameState) {
         playerCount = s.playerCount
@@ -84,6 +106,18 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         progress = s.progress
         claimedBy = s.claimedBy
         runners = s.runners
+        firstPlayerName = s.firstPlayerName
+    }
+
+    /**
+     * Naming Red isn't a game move, so it doesn't go on the undo stack.
+     *
+     * Not called setFirstPlayerName: the `firstPlayerName` property's own (private) setter
+     * already compiles to a JVM method of that name, and the two would clash.
+     */
+    fun nameFirstPlayer(name: String) {
+        firstPlayerName = filterNameInput(name).trim()
+        persist()
     }
 
     private fun push() {
@@ -154,29 +188,28 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         persist()
     }
 
-    /** Hand the board to someone else without banking or busting. */
-    fun passTurn() {
-        push()
-        advanceTurn()
-        persist()
-    }
-
     private fun advanceTurn() {
         if (winner == null) currentPlayer = (currentPlayer + 1) % playerCount
     }
 
     fun undo() {
         val s = history.removeLastOrNull() ?: return
-        restore(s)
+        // Undo walks back moves, not the player's name — keep whatever name is current.
+        restore(s.copy(firstPlayerName = firstPlayerName))
         historyDepth = history.size
         persist()
     }
 
     /** The only thing that clears the board. Wired to a confirmation dialog in the UI. */
-    fun newGame(players: Int = playerCount) {
+    fun newGame(players: Int = playerCount, firstPlayerName: String = this.firstPlayerName) {
         history.clear()
         historyDepth = 0
-        restore(GameState.fresh(players.coerceIn(2, MAX_PLAYERS)))
+        restore(
+            GameState.fresh(
+                playerCount = players.coerceIn(2, MAX_PLAYERS),
+                firstPlayerName = filterNameInput(firstPlayerName).trim(),
+            )
+        )
         persist()
     }
 }

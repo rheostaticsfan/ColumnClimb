@@ -2,6 +2,17 @@ package com.moira.cantstop
 
 import android.content.Context
 
+/** Longest first-player name the header can show without crowding the pills. */
+const val NAME_MAX_LENGTH = 16
+
+/**
+ * The save format is delimiter-separated, so a name can't contain those characters.
+ * Applied while typing, so the field simply refuses them rather than corrupting a save.
+ * Deliberately does NOT trim — trimming mid-typing would stop you entering "Jo Anne".
+ */
+fun filterNameInput(raw: String): String =
+    raw.filterNot { it in "|;:," || it == '\n' || it == '\r' }.take(NAME_MAX_LENGTH)
+
 /**
  * The whole board as one immutable value. Used both for undo snapshots and for saving to disk.
  */
@@ -11,14 +22,16 @@ data class GameState(
     val progress: List<List<Int>>,
     val claimedBy: List<Int>,
     val runners: Map<Int, Int>,
+    val firstPlayerName: String = "",
 ) {
     companion object {
-        fun fresh(playerCount: Int = MAX_PLAYERS) = GameState(
+        fun fresh(playerCount: Int = MAX_PLAYERS, firstPlayerName: String = "") = GameState(
             playerCount = playerCount,
             currentPlayer = 0,
             progress = List(MAX_PLAYERS) { List(COLUMN_COUNT) { 0 } },
             claimedBy = List(COLUMN_COUNT) { UNCLAIMED },
             runners = emptyMap(),
+            firstPlayerName = firstPlayerName,
         )
     }
 }
@@ -26,12 +39,16 @@ data class GameState(
 /**
  * Saves the board to SharedPreferences as a single short string, e.g.
  *
- *     1|4|0|-1,-1,-1,-1,0,-1,-1,-1,-1,1,-1|0,2,2,0,11,...;1,0,4,...|2:3,5:8,7:4
- *      ^ ^ ^ ^                             ^                        ^
- *      | | | claimed-by per column         progress per player      neutral runners
+ *     3|4|0|-1,-1,-1,-1,0,-1,-1,-1,-1,1,-1|0,2,2,0,11,...;1,0,4,...|2:3,5:8,7:4|Moira
+ *      ^ ^ ^ ^                             ^                        ^           ^
+ *      | | | claimed-by per column         progress per player      runners     red's name
  *      | | current player
  *      | player count
  *      format version
+ *
+ * Versions 1 and 2 are deliberately NOT read. Turn order changed from Red/Blue/Green/Cyan to
+ * Red/Green/Blue/Cyan, so player index 1 and 2 swapped meaning: an old save would load Blue's
+ * progress onto Green and quietly corrupt the game. Discarding is the honest option.
  *
  * Anything malformed is treated as "no saved game" rather than crashing, so a bad or
  * outdated save just starts a fresh board.
@@ -50,6 +67,20 @@ class GameStore(context: Context) {
         null
     }
 
+    /**
+     * The theme is a property of the device, not of the game, so it lives in its own key
+     * rather than in the board string. Defaults to light — the e-ink case.
+     */
+    fun saveDarkMode(dark: Boolean) {
+        prefs.edit().putBoolean(KEY_DARK, dark).apply()
+    }
+
+    fun loadDarkMode(): Boolean = try {
+        prefs.getBoolean(KEY_DARK, false)
+    } catch (e: ClassCastException) {
+        false
+    }
+
     private fun encode(s: GameState): String = listOf(
         VERSION.toString(),
         s.playerCount.toString(),
@@ -57,11 +88,13 @@ class GameStore(context: Context) {
         s.claimedBy.joinToString(","),
         s.progress.joinToString(";") { row -> row.joinToString(",") },
         s.runners.entries.joinToString(",") { (col, pos) -> "$col:$pos" },
+        filterNameInput(s.firstPlayerName).trim(),
     ).joinToString("|")
 
     private fun decode(raw: String): GameState? {
         val parts = raw.split("|")
-        if (parts.size != 6 || parts[0].toIntOrNull() != VERSION) return null
+        if (parts[0].toIntOrNull() != VERSION) return null
+        if (parts.size != 7) return null
 
         val playerCount = parts[1].toIntOrNull()?.takeIf { it in 2..MAX_PLAYERS } ?: return null
         val currentPlayer = parts[2].toIntOrNull()?.takeIf { it in 0 until playerCount } ?: return null
@@ -96,12 +129,15 @@ class GameStore(context: Context) {
             }
         ) return null
 
-        return GameState(playerCount, currentPlayer, progress, claimedBy, runners)
+        val name = filterNameInput(parts[6]).trim()
+
+        return GameState(playerCount, currentPlayer, progress, claimedBy, runners, name)
     }
 
     private companion object {
         const val PREFS = "cant_stop_board"
         const val KEY = "game"
-        const val VERSION = 1
+        const val KEY_DARK = "dark_mode"
+        const val VERSION = 3
     }
 }

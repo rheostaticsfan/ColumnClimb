@@ -50,5 +50,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
+    // Used directly by Theme.kt to suppress ripples (LocalRippleTheme).
+    implementation("androidx.compose.material:material-ripple")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

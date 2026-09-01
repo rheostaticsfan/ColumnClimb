@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Dark slate so the sign reads against a light launcher background, as on the Boox. -->
     <color name="ic_launcher_background">#1B2430</color>
 </resources>

@@ -1,3 +1,10 @@
 <resources>
-    <style name="Theme.CantStop" parent="android:Theme.Material.NoActionBar" />
+    <!--
+      Light parent with a white window background: light mode is the default, and this is
+      what paints before Compose draws its first frame. A dark launch window would flash
+      grey on every cold start. Theme.kt repaints it when dark mode is on.
+    -->
+    <style name="Theme.CantStop" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
 </resources>
