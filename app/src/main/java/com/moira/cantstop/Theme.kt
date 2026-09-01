@@ -48,6 +48,18 @@ data class BoardPalette(
 private val PaperInk = Color(0xFF101010)
 
 /**
+ * Every grey in the light theme is an exact neutral — R, G and B identical — and must stay
+ * that way. E-ink devices commonly ship with colour enhancement on, which multiplies
+ * saturation; a "grey" like #6F757C carries a 13-point blue cast that the boost amplifies
+ * into a visibly blue grid. #747474 has nothing to amplify.
+ *
+ * These were chosen to match the luminance of the tinted greys they replaced to within 0.002,
+ * so every contrast figure quoted elsewhere in this file still holds.
+ */
+private val PaperGrey = Color(0xFF747474)      // grid lines,  L=0.175, 4.67:1 on white
+private val PaperGreyDark = Color(0xFF646464)  // outlines,    L=0.127, 5.92:1 on white
+
+/**
  * Text colour to sit on top of a solid player colour — picked per colour, not per palette.
  *
  * The light-mode cyan is deliberately paler than its three neighbours, so a single shared
@@ -88,7 +100,7 @@ val LightBoardPalette = BoardPalette(
     ),
     ink = PaperInk,
     spaceFill = Color(0xFFFFFFFF),
-    spaceBorder = Color(0xFF6F757C), // 4.6:1 on white — survives the e-ink front filter
+    spaceBorder = PaperGrey, // 4.67:1 on white — survives the e-ink front filter
     spaceBorderWidth = 1.dp,
     topSpaceFill = Color(0xFFFFFFFF),
     topSpaceBorder = PaperInk,
@@ -102,7 +114,7 @@ val LightBoardPalette = BoardPalette(
     runnerBorderWidth = 2.5.dp,
     markerBorder = PaperInk,
     footerFill = Color(0xFFFFFFFF),
-    footerBorder = Color(0xFF6F757C),
+    footerBorder = PaperGrey,
 )
 
 private val ScreenInk = Color(0xFF121820)
@@ -153,11 +165,11 @@ private val LightScheme = lightColorScheme(
     onPrimary = Color(0xFFFFFFFF),
     background = Color(0xFFFFFFFF),
     onBackground = PaperInk,
-    surface = Color(0xFFF2F3F5),
+    surface = Color(0xFFF3F3F3),
     onSurface = PaperInk,
-    surfaceVariant = Color(0xFFE6E8EB),
-    onSurfaceVariant = Color(0xFF44494F),
-    outline = Color(0xFF5F656B),
+    surfaceVariant = Color(0xFFE8E8E8),
+    onSurfaceVariant = Color(0xFF484848),
+    outline = PaperGreyDark,
     error = Color(0xFFA8261E),
     onError = Color(0xFFFFFFFF),
 )

@@ -116,6 +116,12 @@ Everything else follows from ghosting and refresh behaviour:
   `LocalRippleTheme`, and independently on the board columns via `indication = null`.
 - **No translucent greys.** Every space is a flat fill plus a crisp outline; e-ink dithers soft
   gradients into noise.
+- **Every grey is an exact neutral.** E-ink devices commonly ship with colour enhancement on,
+  which multiplies saturation. A conventional UI grey like `#6F757C` carries a 13-point blue
+  cast, and the boost amplifies that into a visibly *blue* grid — you can see it happening in
+  the light-mode screenshot above, which predates this fix. `#747474` has nothing to amplify.
+  The neutrals were chosen to match the luminance of the tinted greys they replaced to within
+  0.002, so the contrast figures were unaffected.
 - **The launch window is white.** It's what paints before Compose draws its first frame, so a
   dark one would flash grey on every cold start.
 - **Text on a player colour is chosen per colour** by `onPlayerColor()`, since one shared value
