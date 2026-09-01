@@ -16,6 +16,12 @@ close three columns to win.
 > Ravensburger, Asmodee, or any publisher of Can't Stop. The name is referenced only to say
 > which game this accessory is designed for. All artwork here is original.
 
+| Light — the default, tuned for e-ink | Dark |
+| --- | --- |
+| ![Light mode](docs/light-mode.png) | ![Dark mode](docs/dark-mode.png) |
+
+*Screenshots from a BOOX Note Air4 C, 10.3" Kaleido 3.*
+
 ## Why it exists
 
 Board-game apps assume a backlit phone. This one assumes a 10.3" colour e-ink tablet — a BOOX
