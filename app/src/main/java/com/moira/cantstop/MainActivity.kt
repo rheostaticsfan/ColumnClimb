@@ -23,10 +23,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+// Undo is directional, so it lives in the auto-mirrored set and flips in RTL locales.
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -261,7 +262,7 @@ private fun HeaderBar(
         ) {
             HeaderButton(
                 label = "Undo",
-                icon = Icons.Filled.Undo,
+                icon = Icons.AutoMirrored.Filled.Undo,
                 onClick = onUndo,
                 enabled = vm.canUndo,
             )
