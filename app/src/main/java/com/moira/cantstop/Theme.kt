@@ -27,7 +27,6 @@ import androidx.core.view.WindowCompat
  */
 data class BoardPalette(
     val playerColors: List<Color>,
-    val ink: Color,
     val spaceFill: Color,
     val spaceBorder: Color,
     val spaceBorderWidth: Dp,
@@ -98,7 +97,6 @@ val LightBoardPalette = BoardPalette(
         Color(0xFF1449A0), // blue       L=0.075  darkest
         Color(0xFF00B5CD), // deep cyan  L=0.375  lightest
     ),
-    ink = PaperInk,
     spaceFill = Color(0xFFFFFFFF),
     spaceBorder = PaperGrey, // 4.67:1 on white — survives the e-ink front filter
     spaceBorderWidth = 1.dp,
@@ -127,7 +125,6 @@ val DarkBoardPalette = BoardPalette(
         Color(0xFF1E69E3), // blue       L=0.159  darkest
         Color(0xFF00D7F3), // deep cyan  L=0.551  lightest
     ),
-    ink = ScreenInk,
     spaceFill = Color(0xFF1B2430),
     spaceBorder = Color(0xFF39465A),
     spaceBorderWidth = 1.dp,
@@ -141,7 +138,12 @@ val DarkBoardPalette = BoardPalette(
     runnerBorderWidth = 1.5.dp,
     markerBorder = Color(0xCC000000),
     footerFill = Color(0xFF243040),
-    footerBorder = Color(0xFF39465A),
+    // The footer fill sits only 1.24:1 from a cell's fill, so its outline is what actually
+    // separates the number row from the board. #39465A left that outline at 1.40:1 against
+    // its own fill — effectively invisible. This is the same value as the scheme's `outline`,
+    // and reaches 3.05:1. Deliberately stronger than the cell borders, since the footer is a
+    // distinct element rather than one more space.
+    footerBorder = Color(0xFF6C7A8C),
 )
 
 val LocalBoardPalette = staticCompositionLocalOf { LightBoardPalette }
